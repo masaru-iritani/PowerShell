@@ -6,13 +6,15 @@ Set-PSReadlineOption -EditMode Emacs
 
 function global:Get-GitDefaultPromptPrefixText() {
     [string] $prompt = ""
-    [Microsoft.PowerShell.Commands.HistoryInfo] $lastCommand = Get-History -Count 1
-    if ($lastCommand) {
-        $prompt += "`n"
-    }
 
     # Prompt the command sequential ID.
-    $prompt += "#$((Get-History -Count 1).Id + 1) "
+    [Microsoft.PowerShell.Commands.HistoryInfo] $lastCommand = Get-History -Count 1
+    if ($lastCommand) {
+        $prompt += "`n#$((Get-History -Count 1).Id + 1) "
+    }
+    else {
+        $prompt += "#1 "
+    }
 
     # Prompt the current date time.
     $prompt += Get-Date -Format "yyyy-MM-ddTHH:mm:ss"
@@ -42,7 +44,8 @@ function global:Get-GitDefaultPromptSuffixText() {
 }
 
 function global:Get-GitDefaultPromptBeforeSuffixText() {
-    if (Get-Variable -Name "GitPromptValues" -Scope "Global" `
+    # Prompt the last error exit code in red.
+    if ((Get-Variable -Name "GitPromptValues" -Scope "Global") `
             -and !$global:GitPromptValues.DollarQuestion `
             -and $global:GitPromptValues.LastExitCode) {
         return Write-Prompt -ForegroundColor Red -Object " !$($global:GitPromptValues.LastExitCode)!`n"
@@ -52,21 +55,22 @@ function global:Get-GitDefaultPromptBeforeSuffixText() {
 }
 
 function global:Get-GitDefaultPromptPathText {
+    # Prompt the relative path in the current repository.
     $status = Get-GitStatus
     if ($status `
             -and ($status | Get-Member -Name "GitDir") `
             -and ($status | Get-Member -Name "RepoName")) {
         return $status.RepoName + ":" + [IO.Path]::GetRelativePath($status.GitDir + "\..\", $PWD)
     }
-    else {
-        return Get-PromptPath
-    }
+
+    return Get-PromptPath
 }
 
 function Redo-Profile() {
     . $PSCommandPath
 }
 
+# Load the device specific profile if it exists.
 [string] $localProfilePath = [IO.Path]::ChangeExtension($PSCommandPath, "$env:COMPUTERNAME.ps1")
 if (Test-Path -LiteralPath $localProfilePath) {
     . $localProfilePath
