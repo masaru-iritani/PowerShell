@@ -1,4 +1,4 @@
-﻿# Set-StrictMode -Version "Latest" # posh-git cannot show the first prompt correctly in the strict mode
+﻿Set-StrictMode -Version "Latest"
 
 Import-Module -Name "posh-git"
 Import-Module -Name "PSReadLine"
@@ -29,58 +29,46 @@ function global:Get-GitDefaultPromptPrefixText() {
     return $prompt
 }
 
-function global:Get-GitDefaultPromptSuffixForegroundColor() {
-    if ($?) {
-        return [ConsoleColor]::Green
+function global:Get-GitDefaultPromptSuffixText() {
+    [string] $prompt = $(">" * ($nestedPromptLevel + 1)) + " "
+    [ConsoleColor] $foregroundColor = if ($?) {
+        [ConsoleColor]::Green
     }
     else {
-        return [ConsoleColor]::Red
+        [ConsoleColor]::Red
     }
+
+    return Write-Prompt -Object $prompt -ForegroundColor $foregroundColor
 }
 
 function global:Get-GitDefaultPromptBeforeSuffixText() {
-    if (Get-Variable -Name "GitPromptValues" -Scope "Global") {
-        if ($global:GitPromptValues.DollarQuestion) {
-            return Write-Prompt -ForegroundColor [ConsoleColor]::Green -Object "`n"
-        }
+    if (Get-Variable -Name "GitPromptValues" -Scope "Global" `
+            -and !$global:GitPromptValues.DollarQuestion `
+            -and $global:GitPromptValues.LastExitCode) {
+        return Write-Prompt -ForegroundColor Red -Object " !$($global:GitPromptValues.LastExitCode)!`n"
+    }
 
-        if ($global:GitPromptValues.LastExitCode) {
-            return Write-Prompt -ForegroundColor [ConsoleColor]::Red -Object "[${global:GitPromptValues.LastExitCode}]`n"
-        }
-        else {
-            return Write-Prompt -ForegroundColor [ConsoleColor]::Red -Object "`n"
-        }
-    }
-    else {
-        if ($?) {
-            return Write-Prompt -ForegroundColor [ConsoleColor]::Green -Object "`n"
-        }
-        else {
-            return Write-Prompt -ForegroundColor [ConsoleColor]::Red -Object "`n"
-        }
-    }
+    return "`n"
 }
 
 function global:Get-GitDefaultPromptPathText {
-  $status = Get-GitStatus
-  if ($status `
-      -and ($status | Get-Member -Name "GitDir") `
-      -and ($status | Get-Member -Name "RepoName")) {
-    return $status.RepoName + ":" + [IO.Path]::GetRelativePath($status.GitDir + "\..\", $PWD)
-  }
-  else {
-    return Get-PromptPath
-  }
+    $status = Get-GitStatus
+    if ($status `
+            -and ($status | Get-Member -Name "GitDir") `
+            -and ($status | Get-Member -Name "RepoName")) {
+        return $status.RepoName + ":" + [IO.Path]::GetRelativePath($status.GitDir + "\..\", $PWD)
+    }
+    else {
+        return Get-PromptPath
+    }
 }
 
-function Redo-Profile()
-{
+function Redo-Profile() {
     . $PSCommandPath
 }
 
 [string] $localProfilePath = [IO.Path]::ChangeExtension($PSCommandPath, "$env:COMPUTERNAME.ps1")
-if (Test-Path -LiteralPath $localProfilePath)
-{
+if (Test-Path -LiteralPath $localProfilePath) {
     . $localProfilePath
 }
 
@@ -91,13 +79,12 @@ $GitPromptSettings.DefaultPromptPath.ForegroundColor = [ConsoleColor]::DarkYello
 $GitPromptSettings.DefaultPromptPath.Text = '$(Get-GitDefaultPromptPathText)'
 $GitPromptSettings.DefaultPromptPrefix.ForegroundColor = [ConsoleColor]::DarkGray
 $GitPromptSettings.DefaultPromptPrefix.Text = '$(Get-GitDefaultPromptPrefixText)'
-$GitPromptSettings.DefaultPromptSuffix.ForegroundColor = '$(Get-GitDefaultPromptSuffixForegroundColor)'
+$GitPromptSettings.DefaultPromptSuffix.Text = '$(Get-GitDefaultPromptSuffixText)'
 
 Write-Debug -Message "Loaded $PSCommandPath."
 
 # Chocolatey profile
 $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
-if (Test-Path -LiteralPath $ChocolateyProfile)
-{
+if (Test-Path -LiteralPath $ChocolateyProfile) {
     Import-Module "$ChocolateyProfile"
 }
