@@ -1,7 +1,4 @@
-﻿Set-StrictMode -Version "Latest"
-
-Import-Module -Name "posh-git"
-Import-Module -Name "PSReadLine"
+﻿Import-Module -Name "PSReadLine"
 Set-PSReadlineOption -EditMode Emacs
 
 function global:Get-GitDefaultPromptPrefixText() {
@@ -78,12 +75,22 @@ if (Test-Path -LiteralPath $localProfilePath) {
 
 Set-Alias -Name "reload" -Value "Redo-Profile"
 
-$GitPromptSettings.DefaultPromptBeforeSuffix.Text = '$(Get-GitDefaultPromptBeforeSuffixText)'
-$GitPromptSettings.DefaultPromptPath.ForegroundColor = [ConsoleColor]::DarkYellow
-$GitPromptSettings.DefaultPromptPath.Text = '$(Get-GitDefaultPromptPathText)'
-$GitPromptSettings.DefaultPromptPrefix.ForegroundColor = [ConsoleColor]::DarkGray
-$GitPromptSettings.DefaultPromptPrefix.Text = '$(Get-GitDefaultPromptPrefixText)'
-$GitPromptSettings.DefaultPromptSuffix.Text = '$(Get-GitDefaultPromptSuffixText)'
+[PSModuleInfo] $poshGit = Get-Module -ListAvailable -Name 'posh-git'
+if ($poshGit) {
+    Import-Module -ModuleInfo $poshGit
+    if ($poshGit.Version -ge ([System.Version] '1.0.0')) {
+        $GitPromptSettings.DefaultPromptBeforeSuffix.Text = '$(Get-GitDefaultPromptBeforeSuffixText)'
+        $GitPromptSettings.DefaultPromptPath.ForegroundColor = [ConsoleColor]::DarkYellow
+        $GitPromptSettings.DefaultPromptPath.Text = '$(Get-GitDefaultPromptPathText)'
+        $GitPromptSettings.DefaultPromptPrefix.ForegroundColor = [ConsoleColor]::DarkGray
+        $GitPromptSettings.DefaultPromptPrefix.Text = '$(Get-GitDefaultPromptPrefixText)'
+        $GitPromptSettings.DefaultPromptSuffix.Text = '$(Get-GitDefaultPromptSuffixText)'
+    } else {
+        Write-Warning -Message 'Skipped setting the Git prompt because posh-git is older than 1.0.0-beta4.'
+    }
+} else {
+    Write-Warning -Message 'Skipped loading posh-git because it is not available.'
+}
 
 Write-Debug -Message "Loaded $PSCommandPath."
 
