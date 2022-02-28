@@ -1,5 +1,11 @@
-﻿Import-Module -Name "PSReadLine"
-Set-PSReadlineOption -EditMode Emacs
+﻿Get-Module -Name "posh-git" | Import-Module
+Get-Module -Name "PSReadLine" | Import-Module
+if (Get-Command -Name "Set-PSReadlineOption" -ErrorAction SilentlyContinue) {
+    Set-PSReadlineOption -EditMode Emacs
+    Set-PSReadlineKeyHandler -Chord 'Ctrl+i' -Function Complete
+} else {
+    Write-Warning -Message "Skipping PSReadLine configurations because it's unavailable."
+}
 
 function global:Get-GitDefaultPromptPrefixText() {
     [string] $prompt = ""
@@ -92,7 +98,7 @@ if ($poshGit) {
     Write-Warning -Message 'Skipped loading posh-git because it is not available.'
 }
 
-Write-Debug -Message "Loaded $PSCommandPath."
+Write-Information -InformationAction Continue -Message "Loaded $PSCommandPath."
 
 # Chocolatey profile
 $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
