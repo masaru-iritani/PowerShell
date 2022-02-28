@@ -81,7 +81,9 @@ if (Test-Path -LiteralPath $localProfilePath) {
 
 Set-Alias -Name "reload" -Value "Redo-Profile"
 
-[PSModuleInfo] $poshGit = Get-Module -ListAvailable -Name 'posh-git'
+[PSModuleInfo] $poshGit = Get-Module -ListAvailable -Name 'posh-git' `
+    | Sort-Object -Property 'Version' -Descending `
+    | Select-Object -First 1
 if ($poshGit) {
     Import-Module -ModuleInfo $poshGit
     if ($poshGit.Version -ge ([System.Version] '1.0.0')) {
