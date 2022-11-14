@@ -71,13 +71,14 @@ function global:Get-GitDefaultPromptPathText {
 
 function global:Set-GitAlias
 {
-    git config --global alias.ap add -p
-    git config --global alias.br branch
-    git config --global alias.co checkout
-    git config --global alias.df diff
-    git config --global alias.ds diff --staged
-    git config --global alias.l log --oneline
-    git config --global alias.st status
+    git config --global --replace-all alias.ap 'add -p'
+    git config --global --replace-all alias.br 'branch'
+    git config --global --replace-all alias.co 'checkout'
+    git config --global --replace-all alias.df 'diff'
+    git config --global --replace-all alias.ds 'diff --staged'
+    git config --global --replace-all alias.fa 'fetch --all --prune'
+    git config --global --replace-all alias.l 'log --oneline'
+    git config --global --replace-all alias.st 'status'
 }
 
 function Redo-Profile() {
