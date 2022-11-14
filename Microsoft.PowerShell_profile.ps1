@@ -69,8 +69,7 @@ function global:Get-GitDefaultPromptPathText {
     return Get-PromptPath
 }
 
-function global:Set-GitAlias
-{
+function global:Set-GitAlias {
     git config --global --replace-all alias.ap 'add -p'
     git config --global --replace-all alias.br 'branch'
     git config --global --replace-all alias.co 'checkout'
