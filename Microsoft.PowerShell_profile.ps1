@@ -69,6 +69,17 @@ function global:Get-GitDefaultPromptPathText {
     return Get-PromptPath
 }
 
+function global:Set-GitAlias
+{
+    git config --global alias.ap add -p
+    git config --global alias.br branch
+    git config --global alias.co checkout
+    git config --global alias.df diff
+    git config --global alias.ds diff --staged
+    git config --global alias.l log --oneline
+    git config --global alias.st status
+}
+
 function Redo-Profile() {
     . $PSCommandPath
 }
