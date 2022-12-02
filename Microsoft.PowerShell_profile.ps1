@@ -1,8 +1,20 @@
-﻿Get-Module -Name "posh-git" | Import-Module
-Get-Module -Name "PSReadLine" | Import-Module
-if (Get-Command -Name "Set-PSReadlineOption" -ErrorAction SilentlyContinue) {
-    Set-PSReadlineOption -EditMode Emacs
-    Set-PSReadlineKeyHandler -Chord 'Ctrl+i' -Function Complete
+﻿Get-Module -Name 'posh-git' | Import-Module
+Get-Module -Name 'PSReadLine' | Import-Module
+if (Get-Command -Name 'Set-PSReadLineOption' -ErrorAction SilentlyContinue) {
+    Set-PSReadLineOption -EditMode Emacs
+    $emacsKeyHandlers = Get-PSReadLineKeyHandler
+    Set-PSReadLineOption -EditMode Windows
+    # Overwrite Emacs key handlers on top of Windows key handlers.
+    $emacsKeyHandlers | Where-Object -FilterScript {
+        # For Ctrl + Backspace, prefer BackwardKillWord in Windows edit mode
+        # rather than BackwardDeleteChar in Emacs edit mode.
+        $_.Key -ne 'Ctrl+Backspace'
+    } | ForEach-Object -Process {
+        $emacsKeyHandler = $_
+        Set-PSReadLineKeyHandler -Key $_.Key -Function $_.Function
+    }
+
+    Set-PSReadLineKeyHandler -Chord 'Ctrl+i' -Function Complete
 } else {
     Write-Warning -Message "Skipping PSReadLine configurations because it's unavailable."
 }
