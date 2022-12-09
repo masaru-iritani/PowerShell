@@ -6,12 +6,13 @@ if (Get-Command -Name 'Set-PSReadLineOption' -ErrorAction SilentlyContinue) {
     Set-PSReadLineOption -EditMode Windows
     # Overwrite Emacs key handlers on top of Windows key handlers.
     $emacsKeyHandlers | Where-Object -FilterScript {
-        # For Ctrl + Backspace, prefer BackwardKillWord in Windows edit mode
+        # For "Ctrl + Backspace", prefer BackwardKillWord in Windows edit mode
         # rather than BackwardDeleteChar in Emacs edit mode.
-        $_.Key -ne 'Ctrl+Backspace'
+        # Skip "Ctrl + Alt + ?", otherwise the same key handler is set for "?" and blocks inputting "?".
+        # https://github.com/PowerShell/PSReadLine/issues/3508
+        ($_.Key -ne 'Ctrl+Backspace') -and ($_.Key -ne 'Ctrl+Alt+?')
     } | ForEach-Object -Process {
-        $emacsKeyHandler = $_
-        Set-PSReadLineKeyHandler -Key $_.Key -Function $_.Function
+        Set-PSReadLineKeyHandler -Chord $_.Key -Function $_.Function
     }
 
     Set-PSReadLineKeyHandler -Chord 'Ctrl+i' -Function Complete
@@ -48,13 +49,7 @@ function global:Get-GitDefaultPromptPrefixText() {
 
 function global:Get-GitDefaultPromptSuffixText() {
     [string] $prompt = $(">" * ($nestedPromptLevel + 1)) + " "
-    [ConsoleColor] $foregroundColor = if ($?) {
-        [ConsoleColor]::Green
-    }
-    else {
-        [ConsoleColor]::Red
-    }
-
+    [ConsoleColor] $foregroundColor = if ($?) { [ConsoleColor]::Green } else { [ConsoleColor]::Red }
     return Write-Prompt -Object $prompt -ForegroundColor $foregroundColor
 }
 
