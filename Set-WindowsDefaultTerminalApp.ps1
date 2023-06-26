@@ -28,36 +28,34 @@ function Set-WindowsDefaultTerminalApp
     [string] $path = New-Item -Path HKCU:\Console -Name '%%Startup' -Force `
     | Select-Object -ExpandProperty 'PSPath'
 
-    @($App) `
-    | ForEach-Object -Process {
-        switch ($_)
+    [hashtable] $valueData = switch ($_)
+    {
+        'WindowsConsoleHost'
         {
-            'WindowsConsoleHost'
-            {
-                @{
-                    DelegationConsole = '{B23D10C0-E52E-411E-9D5B-C09FDF709C7D}'
-                    DelegationTerminal = '{B23D10C0-E52E-411E-9D5B-C09FDF709C7D}'
-                }
-            }
-
-            'WindowsTerminal'
-            {
-                @{
-                    DelegationConsole = '{2EACA947-7F5F-4CFA-BA87-8F7FBEEFBE69}'
-                    DelegationTerminal = '{E12CFF52-A866-4C77-9A90-F570A7AA2C6B}'
-                }
-            }
-
-            default
-            {
-                @{
-                    DelegationConsole = [Guid]::Empty.ToString()
-                    DelegationTerminal = [Guid]::Empty.ToString()
-                }
+            @{
+                DelegationConsole = '{B23D10C0-E52E-411E-9D5B-C09FDF709C7D}'
+                DelegationTerminal = '{B23D10C0-E52E-411E-9D5B-C09FDF709C7D}'
             }
         }
-    } `
-    | ForEach-Object -MemberName 'GetEnumerator'
+
+        'WindowsTerminal'
+        {
+            @{
+                DelegationConsole = '{2EACA947-7F5F-4CFA-BA87-8F7FBEEFBE69}'
+                DelegationTerminal = '{E12CFF52-A866-4C77-9A90-F570A7AA2C6B}'
+            }
+        }
+
+        default
+        {
+            @{
+                DelegationConsole = [Guid]::Empty.ToString()
+                DelegationTerminal = [Guid]::Empty.ToString()
+            }
+        }
+    }
+
+    $valueData.GetEnumerator() `
     | ForEach-Object -Process `
     {
         New-ItemProperty `
