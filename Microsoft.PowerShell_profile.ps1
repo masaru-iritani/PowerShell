@@ -1,5 +1,5 @@
 ﻿$parentDirectory = Split-Path -Path $PSCommandPath -Parent
-Import-Module -Name (Join-Path -LiteralPath $parentDirectory -ChildPath 'MaIritan.psm1')
+Import-Module -Name (Join-Path -Path $parentDirectory -ChildPath 'MaIritan.psm1')
 
 Get-Module -Name 'posh-git' | Import-Module
 Get-Module -Name 'PSReadLine' | Import-Module
