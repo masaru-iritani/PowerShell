@@ -25,6 +25,9 @@ function Set-WindowsDefaultTerminalApp
         $App
     )
 
+    [string] $path = New-Item -Path HKCU:\Console -Name '%%Startup' -Force `
+    | Select-Object -ExpandProperty 'PSPath'
+
     @($App) `
     | ForEach-Object -Process {
         switch ($_)
@@ -58,7 +61,7 @@ function Set-WindowsDefaultTerminalApp
     | ForEach-Object -Process `
     {
         New-ItemProperty `
-            -Path 'HKCU:\Console\%%Startup' `
+            -Path $path `
             -Name $_.Name `
             -PropertyType 'String' `
             -Value $_.Value `
