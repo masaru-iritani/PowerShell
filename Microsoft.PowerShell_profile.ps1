@@ -1,4 +1,7 @@
-﻿Get-Module -Name 'posh-git' | Import-Module
+﻿$parentDirectory = Split-Path -Path $PSCommandPath -Parent
+Import-Module -Name (Join-Path -LiteralPath $parentDirectory -ChildPath 'MaIritan.psm1')
+
+Get-Module -Name 'posh-git' | Import-Module
 Get-Module -Name 'PSReadLine' | Import-Module
 if (Get-Command -Name 'Set-PSReadLineOption' -ErrorAction SilentlyContinue) {
     Set-PSReadLineOption -EditMode Emacs
@@ -74,17 +77,6 @@ function global:Get-GitDefaultPromptPathText {
     }
 
     return Get-PromptPath
-}
-
-function global:Set-GitAlias {
-    git config --global --replace-all alias.ap 'add -p'
-    git config --global --replace-all alias.br 'branch'
-    git config --global --replace-all alias.co 'checkout'
-    git config --global --replace-all alias.df 'diff'
-    git config --global --replace-all alias.ds 'diff --staged'
-    git config --global --replace-all alias.fa 'fetch --all --prune'
-    git config --global --replace-all alias.l 'log --oneline'
-    git config --global --replace-all alias.st 'status'
 }
 
 function Redo-Profile() {
