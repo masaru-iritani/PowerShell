@@ -110,6 +110,18 @@ if ($poshGit) {
     Write-Warning -Message 'Skipped loading posh-git because it is not available.'
 }
 
+$starshipConfig = "$HOME\dotfiles\.config\starship.toml"
+if (Get-Command -Name 'starship' -ErrorAction SilentlyContinue) {
+    Invoke-Expression (&starship init powershell)
+    if (Test-Path -LiteralPath $starshipConfig) {
+        $env:STARSHIP_CONFIG = $starshipConfig
+    } else {
+        Write-Warning -Message 'Skipped setting the Starship config path because the config file is missing.'
+    }
+} else {
+    Write-Warning -Message 'Skipped configuring Starship because it is not installed. Install it using winget.'
+}
+
 Write-Information -InformationAction Continue -Message "Loaded $PSCommandPath."
 
 # Chocolatey profile
